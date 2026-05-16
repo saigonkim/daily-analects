@@ -6,21 +6,45 @@ const inter = Inter({ subsets: ["latin"] });
 
 // Server Component for SEO and data fetching
 export default async function Home() {
-  // 오늘 날짜(또는 가장 최근 날짜)의 논어 데이터를 가져옵니다.
-  const { data: analects } = await supabase
+  // 1. 전체 논어 데이터 개수를 가져옵니다.
+  const { count } = await supabase
     .from("analects")
-    .select("*")
-    // .eq("target_date", new Date().toISOString().split('T')[0]) // 실제 운영 시 사용
-    .order("created_at", { ascending: false })
-    .limit(1);
+    .select("*", { count: 'exact', head: true });
 
-  const quote = analects && analects.length > 0 ? analects[0] : {
-    chapter: "학이편 (學而篇)",
-    original_text: "學而時習之 不亦說乎 (학이시습지 불역열호)",
-    translation: "배우고 때때로 익히면 또한 기쁘지 아니한가.",
-    explanation: "여기서 '습(習)'은 어린 새가 날갯짓을 반복하듯 삶 속에서 꾸준히 실천하는 행위를 의미합니다.",
-    application: "오늘 새롭게 알게 된 사실이나 깨달음을 퇴근 전 5분 동안 메모해 보고, 내일 업무에 어떻게 적용할지 계획을 세워보세요."
-  };
+  let quote = null;
+
+  if (count && count > 0) {
+    // 2. 기준일로부터 오늘까지 며칠이 지났는지 계산합니다.
+    const epoch = new Date('2024-01-01T00:00:00Z');
+    const today = new Date();
+    const diffTime = Math.abs(today.getTime() - epoch.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    // 3. (경과 일수 % 전체 개수) 연산을 통해 무한히 순환하는 인덱스를 구합니다.
+    const index = diffDays % count;
+
+    // 4. 계산된 인덱스에 해당하는 구절을 하나 가져옵니다.
+    const { data } = await supabase
+      .from("analects")
+      .select("*")
+      .order("created_at", { ascending: true })
+      .range(index, index);
+
+    if (data && data.length > 0) {
+      quote = data[0];
+    }
+  }
+
+  // 만약 DB가 비어있거나 에러가 났을 때의 기본값 (Fallback)
+  if (!quote) {
+    quote = {
+      chapter: "학이편 (學而篇)",
+      original_text: "學而時習之 不亦說乎 (학이시습지 불역열호)",
+      translation: "배우고 때때로 익히면 또한 기쁘지 아니한가.",
+      explanation: "여기서 '습(習)'은 어린 새가 날갯짓을 반복하듯 삶 속에서 꾸준히 실천하는 행위를 의미합니다.",
+      application: "오늘 새롭게 알게 된 사실이나 깨달음을 퇴근 전 5분 동안 메모해 보고, 내일 업무에 어떻게 적용할지 계획을 세워보세요."
+    };
+  }
 
   // 한자 원문과 괄호 안의 한국어 독음을 분리
   const match = quote.original_text.match(/^(.*?)\s*\((.*?)\)$/);
