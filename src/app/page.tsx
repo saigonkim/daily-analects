@@ -1,4 +1,5 @@
 import { Inter } from "next/font/google";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import CompleteButton from "@/components/CompleteButton";
 
@@ -23,10 +24,15 @@ export default async function Home() {
     // 3. (경과 일수 % 전체 개수) 연산을 통해 무한히 순환하는 인덱스를 구합니다.
     const index = diffDays % count;
 
-    // 4. 계산된 인덱스에 해당하는 구절을 하나 가져옵니다.
+    // 4. 계산된 인덱스에 해당하는 구절을 하나 가져옵니다. (연결된 태그 데이터도 함께 조인)
     const { data } = await supabase
       .from("analects")
-      .select("*")
+      .select(`
+        *,
+        analect_tags (
+          tags ( name )
+        )
+      `)
       .order("created_at", { ascending: true })
       .range(index, index);
 
@@ -50,6 +56,11 @@ export default async function Home() {
   const match = quote.original_text.match(/^(.*?)\s*\((.*?)\)$/);
   const hanjaText = match ? match[1].trim() : quote.original_text;
   const pronunciation = match ? match[2].trim() : "";
+
+  // 태그 데이터 추출 및 정제
+  const tags = quote.analect_tags 
+    ? quote.analect_tags.map((at: any) => at.tags?.name).filter(Boolean)
+    : ["자기수양", "배움"];
 
   return (
     <main className={`min-h-screen bg-[#0D0D12] text-[#F9FAFB] flex flex-col items-center justify-center p-6 sm:p-12 ${inter.className}`}>
@@ -102,6 +113,19 @@ export default async function Home() {
               {quote.application}
             </p>
           </div>
+
+          {/* Tags */}
+          {tags && tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {tags.map((tag: string) => (
+                <Link href={`/tags/${encodeURIComponent(tag)}`} key={tag}>
+                  <span className="inline-block px-4 py-2 rounded-xl bg-[#1C1C26] text-[#9CA3AF] text-sm font-medium border border-[#2A2A35] transition-all hover:border-[#c5a059] hover:text-[#c5a059] cursor-pointer">
+                    #{tag}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
 
           <CompleteButton />
         </section>
