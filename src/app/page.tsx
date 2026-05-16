@@ -1,10 +1,32 @@
-"use client";
-
 import { Inter } from "next/font/google";
+import { supabase } from "@/lib/supabase";
+import CompleteButton from "@/components/CompleteButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export default function Home() {
+// Server Component for SEO and data fetching
+export default async function Home() {
+  // 오늘 날짜(또는 가장 최근 날짜)의 논어 데이터를 가져옵니다.
+  const { data: analects } = await supabase
+    .from("analects")
+    .select("*")
+    // .eq("target_date", new Date().toISOString().split('T')[0]) // 실제 운영 시 사용
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  const quote = analects && analects.length > 0 ? analects[0] : {
+    chapter: "학이편 (學而篇)",
+    original_text: "學而時習之 不亦說乎 (학이시습지 불역열호)",
+    translation: "배우고 때때로 익히면 또한 기쁘지 아니한가.",
+    explanation: "여기서 '습(習)'은 어린 새가 날갯짓을 반복하듯 삶 속에서 꾸준히 실천하는 행위를 의미합니다.",
+    application: "오늘 새롭게 알게 된 사실이나 깨달음을 퇴근 전 5분 동안 메모해 보고, 내일 업무에 어떻게 적용할지 계획을 세워보세요."
+  };
+
+  // 한자 원문과 괄호 안의 한국어 독음을 분리
+  const match = quote.original_text.match(/^(.*?)\s*\((.*?)\)$/);
+  const hanjaText = match ? match[1].trim() : quote.original_text;
+  const pronunciation = match ? match[2].trim() : "";
+
   return (
     <main className={`min-h-screen bg-[#0D0D12] text-[#F9FAFB] flex flex-col items-center justify-center p-6 sm:p-12 ${inter.className}`}>
       {/* Container */}
@@ -14,14 +36,23 @@ export default function Home() {
         <section className="text-center space-y-8 animate-fade-in-up">
           <div>
             <span className="inline-block px-4 py-1.5 rounded-full bg-[#16161E] text-[#c5a059] text-xs font-semibold tracking-widest border border-[#1C1C26] shadow-sm">
-              학이편 (學而篇)
+              {quote.chapter}
             </span>
           </div>
           <h1 className="text-4xl md:text-5xl font-semibold leading-tight tracking-tight text-[#e9e1d8] font-serif">
-            學而時習之<br /><span className="mt-4 block">不亦說乎</span>
+            {hanjaText.split(' ').map((word: string, i: number) => (
+              <span key={i} className={i > 0 ? "mt-4 block" : ""}>{word}</span>
+            ))}
           </h1>
-          <p className="text-lg md:text-xl text-[#d1c5b4] font-medium pt-2">
-            배우고 때때로 익히면<br />또한 기쁘지 아니한가.
+          {pronunciation && (
+            <p className="text-[#c5a059] opacity-80 text-sm md:text-base tracking-[0.2em] mt-6 font-medium">
+              {pronunciation}
+            </p>
+          )}
+          <p className="text-lg md:text-xl text-[#d1c5b4] font-medium pt-4">
+            {quote.translation.split('<br />').map((line: string, i: number) => (
+              <span key={i} className={i > 0 ? "block" : ""}>{line}</span>
+            ))}
           </p>
         </section>
 
@@ -29,7 +60,7 @@ export default function Home() {
         <section className="bg-[#16161E] rounded-3xl p-7 md:p-8 shadow-2xl shadow-black/50 border border-[#1C1C26] transition-transform hover:scale-[1.01]">
           <h2 className="text-xs font-bold text-[#c5a059] mb-3 uppercase tracking-widest opacity-80">Meaning</h2>
           <p className="text-[#9CA3AF] leading-relaxed text-[15px]">
-            여기서 '습(習)'은 어린 새가 날갯짓을 반복하듯 삶 속에서 꾸준히 실천하는 행위를 의미합니다. 단순한 지식의 축적이 아닌, 배운 것을 행동으로 옮길 때 비로소 진정한 기쁨을 얻을 수 있습니다.
+            {quote.explanation}
           </p>
         </section>
 
@@ -44,19 +75,11 @@ export default function Home() {
               Application
             </h2>
             <p className="text-[#e9e1d8] leading-relaxed font-medium text-[15px] relative z-10">
-              오늘 새롭게 알게 된 사실이나 깨달음을 퇴근 전 5분 동안 메모해 보고, 내일 업무에 어떻게 적용할지 단 한 가지라도 구체적인 계획을 세워보세요.
+              {quote.application}
             </p>
           </div>
 
-          <button 
-            className="w-full py-4 rounded-2xl bg-[#c5a059] hover:bg-[#e9c176] text-[#261900] font-bold text-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(197,160,89,0.25)] active:scale-95 flex justify-center items-center gap-2 group"
-            onClick={() => alert('실천 완료! 🎉 (애니메이션 추후 연동)')}
-          >
-            <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-            </svg>
-            Mark as Completed
-          </button>
+          <CompleteButton />
         </section>
 
       </div>
