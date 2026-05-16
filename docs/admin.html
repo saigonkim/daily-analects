@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>논어 한구절 - 데이터 업로드 Admin (Prototype)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Pretendard', sans-serif; background-color: #f9fafb; }
+    .glass-panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
+  </style>
+</head>
+<body class="text-gray-800 p-6">
+  <div class="max-w-7xl mx-auto">
+    <header class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">논어 콘텐츠 어드민 <span class="text-sm font-normal text-blue-500 bg-blue-100 px-2 py-1 rounded ml-2">Phase 1 Prototype</span></h1>
+        <p class="text-gray-500 mt-2">JSON 데이터를 입력하여 파싱하고 미리보기를 확인합니다. (추후 DB Insert 연동)</p>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      
+      <!-- Input Section -->
+      <section class="glass-panel p-6 rounded-2xl shadow-sm">
+        <h2 class="text-xl font-bold mb-4 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+          JSON 데이터 입력
+        </h2>
+        <textarea id="jsonInput" rows="18" class="w-full w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm resize-none bg-gray-50" placeholder="[ { &quot;chapter&quot;: &quot;학이편(學而篇)&quot;, ... } ]"></textarea>
+        
+        <div class="mt-4 flex gap-3">
+          <button onclick="loadSample()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors">샘플 데이터 불러오기</button>
+          <button onclick="parseJSON()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-sm flex-1">데이터 검증 및 미리보기</button>
+        </div>
+        <div id="statusMessage" class="mt-4 text-sm hidden font-medium px-4 py-3 rounded-lg"></div>
+      </section>
+
+      <!-- Preview Section -->
+      <section class="glass-panel p-6 rounded-2xl shadow-sm flex flex-col h-full">
+        <h2 class="text-xl font-bold mb-4 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+          미리보기 (<span id="count">0</span>건)
+        </h2>
+        
+        <div id="previewContainer" class="flex-1 overflow-y-auto space-y-4 pr-2 pb-4">
+          <div class="flex items-center justify-center h-full text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-xl">
+            왼쪽에서 JSON을 검증하면 미리보기가 나타납니다.
+          </div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-gray-100">
+          <button disabled id="dbInsertBtn" class="w-full px-4 py-3 bg-emerald-500 opacity-50 cursor-not-allowed text-white font-bold rounded-xl transition-colors shadow-sm flex items-center justify-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            DB에 업로드 (Phase 2에서 활성화)
+          </button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    const sampleData = [
+      {
+        "chapter": "학이편(學而篇)",
+        "original_text": "學而時習之 不亦說乎 (학이시습지 불역열호)",
+        "translation": "배우고 때때로 익히면 기쁘지 아니한가.",
+        "explanation": "여기서 '습(習)'은 어린 새가 날갯짓을 반복하듯 삶 속에서 꾸준히 실천하는 행위를 의미합니다.",
+        "application": "독서를 통해 새로운 통찰을 얻고 이를 실제 업무나 일상에 적용해 보는 실천의 기쁨을 누려보세요."
+      }
+    ];
+
+    function loadSample() {
+      document.getElementById('jsonInput').value = JSON.stringify(sampleData, null, 2);
+    }
+
+    function showStatus(message, isError = false) {
+      const el = document.getElementById('statusMessage');
+      el.classList.remove('hidden', 'bg-red-50', 'text-red-600', 'bg-emerald-50', 'text-emerald-600');
+      el.classList.add(isError ? 'bg-red-50' : 'bg-emerald-50');
+      el.classList.add(isError ? 'text-red-600' : 'text-emerald-600');
+      el.textContent = message;
+    }
+
+    function parseJSON() {
+      const input = document.getElementById('jsonInput').value;
+      const container = document.getElementById('previewContainer');
+      
+      if (!input.trim()) {
+        showStatus('데이터를 입력해주세요.', true);
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(input);
+        
+        if (!Array.isArray(parsed)) {
+          throw new Error("데이터는 배열 형태( [ ... ] )여야 합니다.");
+        }
+
+        renderPreview(parsed);
+        showStatus('데이터 검증 성공! 미리보기를 확인하세요.');
+        document.getElementById('count').textContent = parsed.length;
+        
+        // 버튼 시각적 활성화 (실제 기능은 막아둠)
+        const btn = document.getElementById('dbInsertBtn');
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        btn.classList.add('hover:bg-emerald-600');
+        
+      } catch (err) {
+        showStatus('JSON 파싱 오류: ' + err.message, true);
+        container.innerHTML = '<div class="text-red-500 bg-red-50 p-4 rounded-lg text-sm border border-red-100">올바른 JSON 포맷인지 확인해주세요. 따옴표나 쉼표가 빠졌을 수 있습니다.</div>';
+        document.getElementById('count').textContent = '0';
+      }
+    }
+
+    function renderPreview(data) {
+      const container = document.getElementById('previewContainer');
+      container.innerHTML = '';
+
+      data.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'bg-white p-5 rounded-xl border border-gray-100 shadow-sm relative overflow-hidden group';
+        
+        // 필수 필드 체크 시각화
+        const isValid = item.original_text && item.translation && item.explanation && item.application;
+        const validBadge = isValid 
+          ? `<span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded font-bold">유효함</span>`
+          : `<span class="bg-red-100 text-red-700 text-xs px-2 py-1 rounded font-bold">필드 누락</span>`;
+
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-3">
+            <span class="text-xs font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded">${item.chapter || '출처 불명'}</span>
+            ${validBadge}
+          </div>
+          <h3 class="text-lg font-bold text-gray-900 mb-1 font-serif leading-relaxed">${item.original_text || '원문 없음'}</h3>
+          <p class="text-md text-gray-700 mb-4 font-medium">${item.translation || '번역 없음'}</p>
+          
+          <div class="space-y-3 mt-4 pt-4 border-t border-gray-50">
+            <div>
+              <span class="block text-xs font-bold text-gray-400 mb-1">💡 뜻풀이</span>
+              <p class="text-sm text-gray-600 leading-relaxed">${item.explanation || '-'}</p>
+            </div>
+            <div>
+              <span class="block text-xs font-bold text-blue-400 mb-1">🏃‍♂️ 오늘의 실천</span>
+              <p class="text-sm text-gray-600 leading-relaxed bg-blue-50/50 p-3 rounded-lg">${item.application || '-'}</p>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>
