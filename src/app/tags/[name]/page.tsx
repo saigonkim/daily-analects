@@ -34,7 +34,8 @@ export default async function TagPage({ params }: { params: Promise<{ name: stri
               홈으로 돌아가기
             </Link>
             <h1 className="text-3xl font-bold text-[#e9e1d8]">
-              <span className="text-[#c5a059]">#{tagName}</span>에 대한 지혜
+              <span className="text-[#c5a059]">#{tagName}</span>
+              {tagName === '지혜' ? '를 담은 문장들' : '에 대한 지혜'}
             </h1>
           </div>
         </header>
