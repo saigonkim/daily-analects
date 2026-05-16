@@ -1,65 +1,65 @@
-import Image from "next/image";
+"use client";
+
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className={`min-h-screen bg-[#0D0D12] text-[#F9FAFB] flex flex-col items-center justify-center p-6 sm:p-12 ${inter.className}`}>
+      {/* Container */}
+      <div className="max-w-md w-full space-y-12 my-auto">
+        
+        {/* Today's Quote */}
+        <section className="text-center space-y-8 animate-fade-in-up">
+          <div>
+            <span className="inline-block px-4 py-1.5 rounded-full bg-[#16161E] text-[#c5a059] text-xs font-semibold tracking-widest border border-[#1C1C26] shadow-sm">
+              학이편 (學而篇)
+            </span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-semibold leading-tight tracking-tight text-[#e9e1d8] font-serif">
+            學而時習之<br /><span className="mt-4 block">不亦說乎</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-lg md:text-xl text-[#d1c5b4] font-medium pt-2">
+            배우고 때때로 익히면<br />또한 기쁘지 아니한가.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        </section>
+
+        {/* Meaning & Explanation */}
+        <section className="bg-[#16161E] rounded-3xl p-7 md:p-8 shadow-2xl shadow-black/50 border border-[#1C1C26] transition-transform hover:scale-[1.01]">
+          <h2 className="text-xs font-bold text-[#c5a059] mb-3 uppercase tracking-widest opacity-80">Meaning</h2>
+          <p className="text-[#9CA3AF] leading-relaxed text-[15px]">
+            여기서 '습(習)'은 어린 새가 날갯짓을 반복하듯 삶 속에서 꾸준히 실천하는 행위를 의미합니다. 단순한 지식의 축적이 아닌, 배운 것을 행동으로 옮길 때 비로소 진정한 기쁨을 얻을 수 있습니다.
+          </p>
+        </section>
+
+        {/* Today's Application */}
+        <section className="space-y-6">
+          <div className="bg-[#16161E] rounded-3xl p-7 md:p-8 border border-[#1C1C26] shadow-2xl shadow-black/50 relative overflow-hidden group">
+            {/* Subtle glow effect on hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#8fa5d6]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <h2 className="text-xs font-bold text-[#8fa5d6] mb-3 uppercase tracking-widest flex items-center gap-2 opacity-80">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#8fa5d6] animate-pulse"></span>
+              Application
+            </h2>
+            <p className="text-[#e9e1d8] leading-relaxed font-medium text-[15px] relative z-10">
+              오늘 새롭게 알게 된 사실이나 깨달음을 퇴근 전 5분 동안 메모해 보고, 내일 업무에 어떻게 적용할지 단 한 가지라도 구체적인 계획을 세워보세요.
+            </p>
+          </div>
+
+          <button 
+            className="w-full py-4 rounded-2xl bg-[#c5a059] hover:bg-[#e9c176] text-[#261900] font-bold text-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(197,160,89,0.25)] active:scale-95 flex justify-center items-center gap-2 group"
+            onClick={() => alert('실천 완료! 🎉 (애니메이션 추후 연동)')}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+            Mark as Completed
+          </button>
+        </section>
+
+      </div>
+    </main>
   );
 }
