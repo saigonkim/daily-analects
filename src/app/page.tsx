@@ -5,6 +5,8 @@ import CompleteButton from "@/components/CompleteButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const dynamic = 'force-dynamic'; // 매일매일 새로운 명언이 렌더링되도록 정적 캐싱 무효화
+
 // Server Component for SEO and data fetching
 export default async function Home() {
   // 1. 전체 논어 데이터 개수를 가져옵니다.
