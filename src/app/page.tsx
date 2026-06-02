@@ -2,6 +2,7 @@ import { Inter } from "next/font/google";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import CompleteButton from "@/components/CompleteButton";
+import { unstable_noStore as noStore } from "next/cache";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -9,6 +10,8 @@ export const dynamic = 'force-dynamic'; // 매일매일 새로운 명언이 렌�
 
 // Server Component for SEO and data fetching
 export default async function Home() {
+  noStore(); // Next.js의 모든 fetch 캐싱을 강제로 비활성화
+
   // 1. 전체 논어 데이터 개수를 가져옵니다.
   const { count } = await supabase
     .from("analects")
@@ -36,6 +39,7 @@ export default async function Home() {
         )
       `)
       .order("created_at", { ascending: true })
+      .order("id", { ascending: true }) // created_at이 동일할 경우를 대비한 2차 정렬 (안정성 보장)
       .range(index, index);
 
     if (data && data.length > 0) {
